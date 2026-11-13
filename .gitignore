@@ -1,0 +1,2 @@
+# Secret com a senha real: nunca vai para o Git (use secret.example.yaml)
+k8s/01-secret.yaml

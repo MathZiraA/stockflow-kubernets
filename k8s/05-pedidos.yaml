@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pedidos
+  namespace: stockflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pedidos
+  template:
+    metadata:
+      labels:
+        app: pedidos
+    spec:
+      containers:
+        - name: pedidos
+          image: leonardosartorello/java-pedidos-k8s:v1
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: dados
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=60"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql:3306/alurafood-pedidos?createDatabaseIfNotExist=true"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: senhas
+                  key: DB_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: senhas
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              cpu: 250m
+              memory: 300Mi
+            limits:
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /pedidos/porta
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /pedidos/porta
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3

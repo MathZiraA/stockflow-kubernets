@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka
+  namespace: stockflow
+spec:
+  clusterIP: None
+  selector:
+    app: eureka
+  ports:
+     - port: 8081
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: eureka
+  namespace: stockflow
+spec:
+  serviceName: eureka
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eureka
+  template:
+    metadata:
+      labels:
+        app: eureka
+    spec:
+      containers:
+      - name: eureka
+        image: leonardosartorello/java-server-k8s:v2
+        ports:
+        - containerPort: 8081
